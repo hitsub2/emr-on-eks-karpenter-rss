@@ -104,3 +104,7 @@ cd emr-on-eks-karpenter-rss/examples
 ```
 
 ## Observability for Job tracking
+
+## Celeborn Dashboard
+
+![Celeborn Grafana Dashboard](assets/images/celeborn-monitoring.png "Celeborn Grafana Dashboard")
