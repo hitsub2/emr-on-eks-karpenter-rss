@@ -14,6 +14,8 @@ cd ./data-on-eks/analytics/terraform/emr-eks-karpenter
 terraform init
 ```
 
+Modify the variables.tf
+
 disable AMP, enable Spark Operator
 
 ```shell
