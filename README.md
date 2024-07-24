@@ -59,9 +59,19 @@ celeborn-worker-1   1/1     Running   0          2d
 
 ## Run examples
 
-Run benchmark job
+### Prepare the data
+
+```shell
+cd emr-on-eks-karpenter-rss/examples
+# modify the parameters if needed
+kubectl apply -f tpcds-data-gen.yaml
+```
+
+### Run benchmark job
 
 ```shell
 cd emr-on-eks-karpenter-rss/examples
 ./emr6.15-rss.sh
 ```
+
+## Observability for Job tracking
