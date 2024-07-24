@@ -4,12 +4,39 @@
 
 ### Deploy the infrastructure
 
-Deloy the EKS cluster and related component(prometheus, Karpenter, kubecost, etc.)
+#### Modify the terraform
+
+Clone the repository
 
 ```shell
 git clone https://github.com/awslabs/data-on-eks.git
 cd ./data-on-eks/analytics/terraform/emr-eks-karpenter
 terraform init
+```
+
+disable AMP, enable Spark Operator
+
+```shell
+variable "enable_amazon_prometheus" {
+  description = "Enable AWS Managed Prometheus service"
+  type        = bool
+  default     = false
+}
+
+
+variable "enable_emr_spark_operator" {
+  description = "Enable the Spark Operator to submit jobs with EMR Runtime"
+  type        = bool
+  default     = true
+}
+```
+
+
+Deloy the EKS cluster and related component(prometheus, Karpenter, kubecost, etc.)
+
+```shell
+chmod +x install.sh
+./install.sh
 ```
 
 Check if the EKS cluster is up and in function
