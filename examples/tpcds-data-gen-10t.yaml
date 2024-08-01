@@ -3,25 +3,25 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: tpcds-data-generation-3t
+  name: tpcds-data-generation-10t
   namespace: oss
 spec:
   type: Scala
   mode: cluster
-  image: ghcr.io/aws-samples/eks-spark-benchmark:3.1.2
+  image: 724853865853.dkr.ecr.us-west-2.amazonaws.com/celeborn-client:3.4.1 
   imagePullPolicy: Always
-  sparkVersion: 3.1.2                    
+  sparkVersion: 3.4.1                    
   mainClass: com.amazonaws.eks.tpcds.DataGeneration
-  mainApplicationFile: local:///opt/spark/examples/jars/eks-spark-benchmark-assembly-1.0.jar
+  mainApplicationFile: local:///usr/lib/spark/examples/jars/eks-spark-benchmark-assembly-1.0.jar
   arguments:
   # TPC-DS data localtion
-    - "s3://$(BUCKET_PARAM)/BLOG_TPCDS-TEST-3T-partitioned"
+    - "s3://$(BUCKET_PARAM)/BLOG_TPCDS-TEST-10T-partitioned"
   # Path to kit in the docker image
     - "/opt/tpcds-kit/tools"
   # Data Format
     - "parquet"
   # Scale factor (in GB)
-    - "3000"
+    - "10000"
   # Generate data num partitions
     - "200"
   # Create the partitioned fact tables
@@ -37,17 +37,25 @@ spec:
     "spark.sql.files.maxRecordsPerFile": "30000000"
     "spark.serializer": "org.apache.spark.serializer.KryoSerializer"
 
-    "spark.kubernetes.node.selector.eks.amazonaws.com/nodegroup": "rss"
+
+    spark.kubernetes.local.dirs.tmpfs: "true"
+    spark.kubernetes.submission.connectionTimeout: "60000000"
+    spark.kubernetes.submission.requestTimeout: "60000000"
+    spark.kubernetes.driver.connectionTimeout: "60000000"
+    spark.kubernetes.driver.requestTimeout: "60000000"
+
+    "spark.kubernetes.node.selector.NodeGroupType": "data-gen"
 
     # S3 settings
     "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-    "spark.hadoop.fs.s3a.fast.upload": "true"
-    "spark.hadoop.fs.s3a.path.style.access": "true"
-    "spark.hadoop.fs.s3.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    #"spark.hadoop.fs.s3a.fast.upload": "true"
+    #"spark.hadoop.fs.s3a.path.style.access": "true"
+    #"spark.hadoop.fs.s3.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     "spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version": "2"
     "spark.kubernetes.executor.podNamePrefix": "oss-data-gen"
     "spark.executor.defaultJavaOptions": "-verbose:gc -XX:+UseG1GC"
     "spark.driver.defaultJavaOptions": "-XX:+UseG1GC"
+
   driver:
     initContainers:  
     - name: volume-permission
@@ -65,7 +73,7 @@ spec:
     cores: 10
     coreLimit: "10.1"
     memory: "10g"
-    serviceAccount: oss
+    serviceAccount: emr-sa 
     volumeMounts:
       - name: spark-local-dir-1
         mountPath: /ossdata1      
