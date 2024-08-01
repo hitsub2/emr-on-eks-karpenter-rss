@@ -4,72 +4,21 @@
 
 ### Deploy the infrastructure
 
-#### Modify the terraform
-
-Clone the repository
+#### Clone the repository and deploy the infrastructure
 
 ```shell
-git clone https://github.com/awslabs/data-on-eks.git
-cd ./data-on-eks/analytics/terraform/emr-eks-karpenter
-terraform init
-```
-
-Modify the variables.tf
-
-disable AMP, enable Spark Operator
-
-```shell
-variable "enable_amazon_prometheus" {
-  description = "Enable AWS Managed Prometheus service"
-  type        = bool
-  default     = false
-}
-
-
-variable "enable_emr_spark_operator" {
-  description = "Enable the Spark Operator to submit jobs with EMR Runtime"
-  type        = bool
-  default     = true
-}
-```
-
-
-Deloy the EKS cluster and related component(prometheus, Karpenter, kubecost, etc.)
-
-```shell
-chmod +x install.sh
+git clone https://github.com/hitsub2/emr-on-eks-karpenter-rss
+cd emr-on-eks-karpenter-rss/infra
 ./install.sh
 ```
 
 Check if the EKS cluster is up and in function
-
 ```shell
 kubectl get nodes
 kubectl get pods -A
 ```
 
-
-### Deploy Aapache Celeborn
-
-Clone the repository
-```shell
-git  clone https://github.com/hitsub2/emr-on-eks-karpenter-rss
-```
-
-Apply Karpenter Nodepool for celeborn
-
-```shell
-cd emr-on-eks-karpenter-rss
-kubectl apply -f karpenter/*
-```
-
-Deploy the Apache Celeborn charts
-```shell
-cd emr-on-eks-karpenter-rss # make sure it is the root directory of this repo
-helm install celeborn charts/celeborn -n celeborn --create-namespace 
-```
-
-Check the Celeborn service status
+#### Check the Celeborn service status
 
 ```shell
 kubectl get pods -n celeborn
@@ -88,7 +37,7 @@ celeborn-worker-1   1/1     Running   0          2d
 
 ## Run examples
 
-### Prepare the data
+### Prepare the data optional
 
 ```shell
 cd emr-on-eks-karpenter-rss/examples
@@ -98,10 +47,24 @@ kubectl apply -f tpcds-data-gen.yaml
 
 ### Run benchmark job
 
+run tpcds sql
+
+export S3BUCKET_LOG=YOUR_S3_BUCKET
+
+# leave it as default if you do not generate your own data
+export S3BUCKET_DATA=blogpost-sparkoneks-us-east-1
+
 ```shell
 cd emr-on-eks-karpenter-rss/examples
-./emr6.15-rss.sh
+./emr7.0-rss-99sql.sh
 ```
+
+By default, this script will create resource in emr-data-team-a namespace
+
+```shell
+kubectl get pods -n emr-data-team-a
+```
+
 
 ## Observability for Job tracking
 
