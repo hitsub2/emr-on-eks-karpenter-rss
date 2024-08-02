@@ -2,14 +2,13 @@
 # SPDX-FileCopyrightText: Copyright 2021 Amazon.com, Inc. or its affiliates.
 # SPDX-License-Identifier: MIT-0
 
-export EMRCLUSTER_NAME=emr-eks-karpenter-emr-data-team-a
+export EMRCLUSTER_NAME=emr-eks-rss-emr-data-team-a
 export AWS_REGION=us-west-2
 export ACCOUNTID=$(aws sts get-caller-identity --query Account --output text)
 export VIRTUAL_CLUSTER_ID=$(aws emr-containers list-virtual-clusters --query "virtualClusters[?name == '$EMRCLUSTER_NAME' && state == 'RUNNING'].id" --output text)
-echo $VIRTUAL_CLUSTER_ID
-export EMR_ROLE_ARN=arn:aws:iam::$ACCOUNTID:role/emr-eks-karpenter-emr-data-team-a
-echo $EMR_ROLE_ARN
-export S3BUCKET=spark-data-rss
+export EMR_ROLE_ARN=arn:aws:iam::$ACCOUNTID:role/emr-eks-rss-emr-data-team-a
+export S3BUCKET_LOG=spark-data-rss
+export S3BUCKET_DATA=blogpost-sparkoneks-us-east-1
 export ECR_URL="$ACCOUNTID.dkr.ecr.$AWS_REGION.amazonaws.com"
 export JOB_TEMPLATE_ID=$(aws emr-containers list-job-templates --query "templates[?name == 'celeborn_dra_template'].id" --output text)
 
@@ -23,14 +22,14 @@ aws emr-containers start-job-run \
   --job-driver '{
   "sparkSubmitJobDriver": {
       "entryPoint": "local:///usr/lib/spark/examples/jars/eks-spark-benchmark-assembly-1.0.jar",
-      "entryPointArguments":["s3://'$S3BUCKET'/BLOG_TPCDS-TEST-3T-partitioned","s3://'$S3BUCKET'/EMRONEKS_TPCDS-TEST-3T-RESULT","/opt/tpcds-kit/tools","parquet","3000","1","false","q24a-v2.4,q25-v2.4,q26-v2.4,q27-v2.4,q30-v2.4q31-v2.4,q32-v2.4,q33-v2.4,q34-v2.4,q36-v2.4,q37-v2.4,q39a-v2.4,q39b-v2.4,q41-v2.4,q42-v2.4,q43-v2.4,q52-v2.4,q53-v2.4,q55-v2.4,q56-v2.4,q60-v2.4,q61-v2.4,q63-v2.4,q73-v2.4,q77-v2.4,q83-v2.4,q86-v2.4,q98-v2.4","true"],
-      "sparkSubmitParameters": "--class com.amazonaws.eks.tpcds.BenchmarkSQL --conf spark.kubernetes.container.image=724853865853.dkr.ecr.us-west-2.amazonaws.com/celeborn-client:latest --conf spark.driver.cores=2 --conf spark.driver.memory=3g --conf spark.executor.cores=4 --conf spark.executor.memory=6g --conf spark.executor.instances=20"}}' \
+      "entryPointArguments":["s3://'$S3BUCKET_DATA'/BLOG_TPCDS-TEST-3T-partitioned","s3://'$S3BUCKET_DATA'/EMRONEKS_TPCDS-TEST-3T-RESULT","/opt/tpcds-kit/tools","parquet","3000","1","false","q24a-v2.4,q25-v2.4,q26-v2.4,q27-v2.4,q30-v2.4q31-v2.4,q32-v2.4,q33-v2.4,q34-v2.4,q36-v2.4,q37-v2.4,q39a-v2.4,q39b-v2.4,q41-v2.4,q42-v2.4,q43-v2.4,q52-v2.4,q53-v2.4,q55-v2.4,q56-v2.4,q60-v2.4,q61-v2.4,q63-v2.4,q73-v2.4,q77-v2.4,q83-v2.4,q86-v2.4,q98-v2.4","true"],
+      "sparkSubmitParameters": "--class com.amazonaws.eks.tpcds.BenchmarkSQL --conf spark.kubernetes.container.image=public.ecr.aws/t6v6o5d5/emr-eks-rss:3.4.1 --conf spark.driver.cores=2 --conf spark.driver.memory=3g --conf spark.executor.cores=4 --conf spark.executor.memory=6g --conf spark.executor.instances=20"}}' \
   --configuration-overrides '{
     "applicationConfiguration": [
       {
                  "classification": "spark-defaults",
                  "properties": {
-                   "spark.kubernetes.container.image": "724853865853.dkr.ecr.us-west-2.amazonaws.com/celeborn-client:latest",
+                   "spark.kubernetes.container.image": "public.ecr.aws/t6v6o5d5/emr-eks-rss:3.4.1",
                    "spark.network.timeout": "2000s",
                    "spark.executor.heartbeatInterval": "300s",
                    "spark.kubernetes.executor.podNamePrefix": "celeborn-testing",
@@ -84,7 +83,7 @@ aws emr-containers start-job-run \
     "monitoringConfiguration": {
       "persistentAppUI":"ENABLED",
       "s3MonitoringConfiguration": {
-        "logUri": "'"s3://$S3BUCKET"'/logs/spark/"
+        "logUri": "'"s3://$S3BUCKET_LOG"'/logs/spark/"
       }
     }
   }'
